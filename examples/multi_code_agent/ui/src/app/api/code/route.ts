@@ -14,10 +14,15 @@ async function initializeTraceRoot() {
       tracerootInitialized = true;
       console.log('🚀 TraceRoot initialized successfully in API route');
       if (tracerootLogger) {
-        tracerootLogger.info('🚀 TraceRoot initialized successfully in API route');
+        tracerootLogger.info(
+          '🚀 TraceRoot initialized successfully in API route'
+        );
       }
     } catch (error) {
-      console.error('⚠️ TraceRoot initialization failed, continuing without tracing:', error);
+      console.error(
+        '⚠️ TraceRoot initialization failed, continuing without tracing:',
+        error
+      );
       tracerootInitialized = false;
       tracerootLogger = null;
       // Don't throw - continue without TraceRoot
@@ -44,23 +49,30 @@ const makeTracedCodeRequest = async (query: string): Promise<any> => {
 
         console.log('🔗 Trace Context:', {
           headerCount: Object.keys(traceHeaders).length,
-          hasSpanInfo: !!spanInfo
+          hasSpanInfo: !!spanInfo,
         });
 
         if (tracerootLogger) {
           tracerootLogger.debug('🔗 Trace Context Debug', {
             spanInfo: JSON.stringify(spanInfo),
             traceHeaders: JSON.stringify(traceHeaders),
-            headerCount: Object.keys(traceHeaders).length
+            headerCount: Object.keys(traceHeaders).length,
           });
         }
       } catch (traceError) {
-        console.warn('⚠️ Failed to get trace headers, continuing without:', traceError);
+        console.warn(
+          '⚠️ Failed to get trace headers, continuing without:',
+          traceError
+        );
       }
     }
 
     // Use undici instead of fetch to avoid Next.js automatic instrumentation
-    const { statusCode, headers: responseHeaders, body } = await request('http://localhost:9999/code', {
+    const {
+      statusCode,
+      headers: responseHeaders,
+      body,
+    } = await request('http://localhost:9999/code', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,23 +98,25 @@ const makeTracedCodeRequest = async (query: string): Promise<any> => {
       if (tracerootLogger) {
         tracerootLogger.error('❌ Code agent request failed', {
           status: response.status,
-          error: errorText
+          error: errorText,
         });
       }
 
-      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      throw new Error(
+        `HTTP error! status: ${response.status}, body: ${errorText}`
+      );
     }
 
     const result = await response.json();
     console.log('✅ Code agent request completed:', {
       hasResponse: !!result.response,
-      hasError: !!result.error
+      hasError: !!result.error,
     });
 
     if (tracerootLogger) {
       tracerootLogger.info('✅ Code agent request completed', {
         hasResponse: !!result.response,
-        hasError: !!result.error
+        hasError: !!result.error,
       });
     }
 
@@ -111,7 +125,9 @@ const makeTracedCodeRequest = async (query: string): Promise<any> => {
     console.error('❌ Code agent request failed:', error.message);
 
     if (tracerootLogger) {
-      tracerootLogger.error('❌ Code agent request failed', { error: error.message });
+      tracerootLogger.error('❌ Code agent request failed', {
+        error: error.message,
+      });
     }
 
     throw error;
@@ -123,13 +139,15 @@ function makeCodeRequest(query: string): Promise<any> {
   if (tracerootInitialized) {
     try {
       // Use traceFunction for proper span creation
-      const tracedFunction = traceroot.traceFunction(
-        makeTracedCodeRequest,
-        { spanName: 'code_agent_request' }
-      );
+      const tracedFunction = traceroot.traceFunction(makeTracedCodeRequest, {
+        spanName: 'code_agent_request',
+      });
       return tracedFunction(query);
     } catch (traceError) {
-      console.warn('⚠️ traceFunction failed, falling back to regular function:', traceError);
+      console.warn(
+        '⚠️ traceFunction failed, falling back to regular function:',
+        traceError
+      );
       return makeTracedCodeRequest(query);
     }
   }
@@ -203,7 +221,7 @@ export async function GET() {
       status: 'ready',
       tracerootInitialized,
       codeAgentReachable: testResponse.ok,
-      codeAgentStatus: testResponse.status
+      codeAgentStatus: testResponse.status,
     });
   } catch (error: any) {
     return NextResponse.json({
@@ -211,7 +229,7 @@ export async function GET() {
       status: 'error',
       error: error.message,
       tracerootInitialized,
-      codeAgentReachable: false
+      codeAgentReachable: false,
     });
   }
 }
